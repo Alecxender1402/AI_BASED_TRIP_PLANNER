@@ -6,6 +6,23 @@ import { motion } from "framer-motion";
 const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Header with Auth Buttons */}
+      <div className="absolute top-0 right-0 p-4 z-20 flex gap-4">
+        <Link to="/signin">
+          <Button
+            variant="outline"
+            className="bg-white/80 hover:bg-white text-blue-600 font-medium"
+          >
+            Sign In
+          </Button>
+        </Link>
+        <Link to="/signup">
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
+            Sign Up
+          </Button>
+        </Link>
+      </div>
+
       {/* Hero Section */}
       <div
         className="relative h-screen flex flex-col items-center justify-center text-center px-4 md:px-8 lg:px-16"
