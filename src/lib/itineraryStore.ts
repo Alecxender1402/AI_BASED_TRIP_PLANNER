@@ -33,15 +33,15 @@ export const useItineraryStore = create<ItineraryState>(
           const itineraryPromise = generateItinerary(request);
 
           // Set a timeout for the entire operation
-          const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => {
-              reject(new Error("Itinerary generation timed out"));
-            }, 45000); // 45 second timeout
-          });
+          // const timeoutPromise = new Promise((_, reject) => {
+          //   setTimeout(() => {
+          //     reject(new Error("Itinerary generation timed out"));
+          //   }, 45000); // 45 second timeout
+          // });
 
           const itinerary = (await Promise.race([
             itineraryPromise,
-            timeoutPromise,
+            // timeoutPromise,
           ])) as GeneratedItinerary;
           set({ currentItinerary: itinerary, isLoading: false });
           return itinerary;
