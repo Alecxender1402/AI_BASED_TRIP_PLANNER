@@ -95,9 +95,9 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
             <DollarSign className="h-5 w-5 text-primary" />
             <span>Budget: ${budget}</span>
           </div>
-          <Badge variant={remainingBudget >= 0 ? "default" : "destructive"}>
+          {/* <Badge variant={remainingBudget >= 0 ? "default" : "destructive"}>
             {budgetStatus}: ${Math.abs(remainingBudget)}
-          </Badge>
+          </Badge> */}
         </div>
         <p className="text-muted-foreground">
           We've crafted a personalized itinerary based on your preferences.
@@ -134,7 +134,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
                   >
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-semibold">
-                        Day {day.day}: {day.date}
+                        Day {day.day}
                       </h3>
                     </div>
 
@@ -223,7 +223,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
           </Card>
 
           {/* Map Visualization Placeholder */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle>Trip Map</CardTitle>
               <CardDescription>
@@ -241,7 +241,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Chat Interface Toggle */}
           <Button className="w-full" onClick={() => setIsChatOpen(!isChatOpen)}>
