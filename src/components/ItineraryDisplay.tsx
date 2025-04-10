@@ -139,6 +139,11 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
                     </div>
 
                     {day.activities.map((activity, actIndex) => (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${activity.location}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <Card key={actIndex}>
                         <CardHeader className="pb-2">
                           <div className="flex justify-between">
@@ -164,6 +169,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
                           </div>
                         </CardContent>
                       </Card>
+                      </a>
                     ))}
                   </TabsContent>
                 ))}
@@ -186,6 +192,10 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
               <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-4">
                   {hotels.map((hotel, index) => (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${hotel.name}`}
+                      target="_blank"
+                      rel="noopener noreferrer" >
                     <Card key={index}>
                       <div className="aspect-video w-full overflow-hidden rounded-t-lg">
                         <img
@@ -216,6 +226,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
                         </div>
                       </CardContent>
                     </Card>
+                    </a>
                   ))}
                 </div>
               </ScrollArea>
