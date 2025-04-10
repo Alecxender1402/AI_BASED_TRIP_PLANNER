@@ -81,9 +81,9 @@ const TripQuestionnaire: React.FC<TripQuestionnaireProps> = ({
       const progressInterval = setInterval(() => {
         setGenerationProgress((prev) => {
           // Cap at 95% to show it's still working but not complete
-          return prev < 95 ? prev + 5 : prev;
+          return prev < 99 ? prev + 3 : prev;
         });
-      }, 1000);
+      }, 2000);
 
       await createItinerary(formData);
       clearInterval(progressInterval);

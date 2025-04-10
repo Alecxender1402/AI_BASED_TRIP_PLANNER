@@ -106,7 +106,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 ga5p-6">
         {/* Day-by-Day Timeline */}
         <div className="lg:col-span-2">
           <Card>
@@ -159,7 +159,7 @@ const ItineraryDisplay: React.FC<ItineraryDisplayProps> = (props) => {
                             </div>
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-4 w-4" />
-                              <span>${activity.cost}</span>
+                              <span>{activity.cost}</span>
                             </div>
                           </div>
                         </CardContent>
