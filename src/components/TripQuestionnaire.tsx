@@ -73,7 +73,7 @@ const TripQuestionnaire: React.FC = () => {
     // Progress indicator
     const progressInterval = setInterval(() => {
       setGenerationProgress((prev) => (prev < 99 ? prev + 5 : prev));
-    }, 6000);
+    }, 5000);
 
     try {
       const token = localStorage.getItem("token");
