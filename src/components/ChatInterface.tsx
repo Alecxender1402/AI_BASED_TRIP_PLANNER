@@ -28,45 +28,57 @@ interface Message {
 interface ChatInterfaceProps {
   itineraryId?: string;
   itineraryContext?: any;
-  onSendMessage?: (message: string) => Promise<string>;
   isCollapsible?: boolean;
 }
 
 // Helper function to format bot responses
 const formatBotResponse = (text: string): string => {
-  // Remove ** markdown formatting
   let formattedText = text.replace(/\*\*/g, "");
-
-  // Convert numbered points with periods (e.g., "1. Text") to proper bullet points
   formattedText = formattedText.replace(/^(\d+)\. (.+)$/gm, "• $2");
-
-  // Convert lines that start with city names in parentheses to bullet points
   formattedText = formattedText.replace(
     /^\s*\(([^)]+)\)\s*(.+)$/gm,
     "• $1: $2",
   );
-
   return formattedText;
+};
+
+// ---- NEW: Send message to your MongoDB backend ----
+const sendMessageToBackend = async (
+  message: string,
+  itineraryId?: string,
+  itineraryContext?: any
+): Promise<string> => {
+  try {
+    const response = await fetch("https://trip-planner-server.onrender.com/api/chat/message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Optionally add JWT token for auth:
+        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        message,
+        itineraryId,
+        itineraryContext : JSON.stringify(itineraryContext || {}),
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to get response from bot");
+    }
+
+    const data = await response.json();
+    return data.response || "Sorry, I didn't get that.";
+  } catch (error: any) {
+    console.error("Error contacting backend:", error);
+    return "Sorry, I encountered an error processing your request. Please try again.";
+  }
 };
 
 const ChatInterface = ({
   itineraryId = "default-itinerary",
   itineraryContext,
-  onSendMessage = async (message) => {
-    try {
-      if (!itineraryContext) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        return "I don't have access to your itinerary details yet. Please create an itinerary first.";
-      }
-
-      // Import dynamically to avoid circular dependencies
-      const { answerItineraryQuestion } = await import("@/lib/deepseek");
-      return await answerItineraryQuestion(message, itineraryContext);
-    } catch (error) {
-      console.error("Error getting response:", error);
-      return "Sorry, I encountered an error processing your request. Please try again.";
-    }
-  },
   isCollapsible = true,
 }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([
@@ -97,9 +109,12 @@ const ChatInterface = ({
     setIsLoading(true);
 
     try {
-      let response = await onSendMessage(inputValue);
-
-      // Format the response to remove ** and convert to point-wise format
+      // Use the new backend function
+      let response = await sendMessageToBackend(
+        userMessage.content,
+        itineraryId,
+        itineraryContext
+      );
       response = formatBotResponse(response);
 
       const botMessage: Message = {
@@ -111,8 +126,6 @@ const ChatInterface = ({
 
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      console.error("Error sending message:", error);
-
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content:
@@ -120,7 +133,6 @@ const ChatInterface = ({
         sender: "bot",
         timestamp: new Date(),
       };
-
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -159,7 +171,6 @@ const ChatInterface = ({
           )}
         </div>
       </CardHeader>
-
       {!isCollapsed && (
         <>
           <ScrollArea className="h-[350px] p-4">

@@ -1,10 +1,10 @@
+// itineraryStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { supabase } from "./supabase";
 import {
-  generateItinerary,
   GeneratedItinerary,
   ItineraryRequest,
+  generateItinerary,
 } from "./deepseek";
 
 interface ItineraryState {
@@ -13,11 +13,11 @@ interface ItineraryState {
   error: string | null;
   setItinerary: (itinerary: GeneratedItinerary) => void;
   createItinerary: (request: ItineraryRequest) => Promise<GeneratedItinerary>;
-  saveItineraryToSupabase: (userId: string) => Promise<void>;
-  loadItineraryFromSupabase: (itineraryId: string) => Promise<void>;
+  saveItinerary: () => Promise<string>; // Returns itinerary ID
+  loadItinerary: (itineraryId: string) => Promise<void>;
 }
 
-export const useItineraryStore = create<ItineraryState>(
+export const useItineraryStore = create<ItineraryState>()(
   persist(
     (set, get) => ({
       currentItinerary: null,
@@ -29,24 +29,10 @@ export const useItineraryStore = create<ItineraryState>(
       createItinerary: async (request) => {
         set({ isLoading: true, error: null });
         try {
-          // Add a fallback mechanism with mock data if API takes too long
-          const itineraryPromise = generateItinerary(request);
-
-          // Set a timeout for the entire operation
-          // const timeoutPromise = new Promise((_, reject) => {
-          //   setTimeout(() => {
-          //     reject(new Error("Itinerary generation timed out"));
-          //   }, 45000); // 45 second timeout
-          // });
-
-          const itinerary = (await Promise.race([
-            itineraryPromise,
-            // timeoutPromise,
-          ])) as GeneratedItinerary;
+          const itinerary = await generateItinerary(request);
           set({ currentItinerary: itinerary, isLoading: false });
           return itinerary;
         } catch (error) {
-          console.error("Itinerary generation error:", error);
           const errorMessage =
             error instanceof Error
               ? error.message
@@ -56,47 +42,49 @@ export const useItineraryStore = create<ItineraryState>(
         }
       },
 
-      saveItineraryToSupabase: async (userId) => {
+      saveItinerary: async () => {
         const { currentItinerary } = get();
         if (!currentItinerary) throw new Error("No itinerary to save");
 
         try {
-          const { data, error } = await supabase
-            .from("itineraries")
-            .insert({
-              user_id: userId,
-              destination: currentItinerary.destination,
-              budget: currentItinerary.budget,
-              duration: currentItinerary.duration,
-              companions: currentItinerary.companions,
-              itinerary_data: currentItinerary,
-            })
-            .select();
+          const response = await fetch("https://trip-planner-server.onrender.com/api/itineraries", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(currentItinerary),
+          });
 
-          if (error) throw error;
-          return data;
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to save itinerary");
+          }
+
+          const data = await response.json();
+          return data._id; // Return MongoDB ID
         } catch (error) {
           console.error("Error saving itinerary:", error);
           throw error;
         }
       },
 
-      loadItineraryFromSupabase: async (itineraryId) => {
+      loadItinerary: async (itineraryId) => {
         set({ isLoading: true, error: null });
         try {
-          const { data, error } = await supabase
-            .from("itineraries")
-            .select("*")
-            .eq("id", itineraryId)
-            .single();
-
-          if (error) throw error;
-          if (!data) throw new Error("Itinerary not found");
-
-          set({
-            currentItinerary: data.itinerary_data as GeneratedItinerary,
-            isLoading: false,
+          const response = await fetch(`https://trip-planner-server.onrender.com/api/itineraries/${itineraryId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to load itinerary");
+          }
+
+          const itinerary = await response.json();
+          set({ currentItinerary: itinerary, isLoading: false });
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : "Failed to load itinerary";
@@ -107,6 +95,6 @@ export const useItineraryStore = create<ItineraryState>(
     }),
     {
       name: "itinerary-storage",
-    },
-  ),
+    }
+  )
 );

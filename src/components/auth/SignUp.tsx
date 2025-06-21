@@ -10,8 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
-
+import { toast } from 'sonner';
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,31 +25,20 @@ const SignUp = () => {
     setError(null);
 
     try {
-      // Create a new user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          },
-        },
+      const response = await fetch("https://trip-planner-server.onrender.com/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name }),
       });
 
-      if (authError) throw authError;
-
-      // If sign up is successful, add user to the users table
-      if (authData.user) {
-        const { error: profileError } = await supabase.from("users").insert({
-          id: authData.user.id,
-          email: email,
-          name: name,
-        });
-
-        if (profileError) throw profileError;
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.message || "Sign-up failed");
+      toast.success("Account created successfully!");
+      // Store token if provided  
+      if (data.token) {
+        localStorage.setItem("token", data.token);
       }
-
-      // Redirect to sign in page after successful sign up
       navigate("/signin", {
         state: { message: "Account created successfully. Please sign in." },
       });

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useItineraryStore } from "@/lib/itineraryStore";
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Toaster, toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -23,10 +23,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowRight, Send } from "lucide-react";
-
-interface TripQuestionnaireProps {
-  onSubmit?: (data: TripFormData) => void;
-}
+import axios from "axios";
 
 export interface TripFormData {
   destination: string;
@@ -36,12 +33,8 @@ export interface TripFormData {
   interests: string[];
 }
 
-const TripQuestionnaire: React.FC<TripQuestionnaireProps> = ({
-  onSubmit = () => {},
-}) => {
+const TripQuestionnaire: React.FC = () => {
   const navigate = useNavigate();
-  const createItinerary = useItineraryStore((state) => state.createItinerary);
-  const isLoading = useItineraryStore((state) => state.isLoading);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<TripFormData>({
     destination: "",
@@ -71,27 +64,47 @@ const TripQuestionnaire: React.FC<TripQuestionnaireProps> = ({
 
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
+    setGenerationError(null);
+    setIsLoading(true);
+
+    // Progress indicator
+    const progressInterval = setInterval(() => {
+      setGenerationProgress((prev) => (prev < 99 ? prev + 5 : prev));
+    }, 4000);
+
     try {
-      setGenerationError(null);
-      onSubmit(formData);
-
-      // Set up a progress indicator that increases every second
-      const progressInterval = setInterval(() => {
-        setGenerationProgress((prev) => {
-          // Cap at 95% to show it's still working but not complete
-          return prev < 99 ? prev + 3 : prev;
-        });
-      }, 4000);
-
-      await createItinerary(formData);
+      const token = localStorage.getItem("token");
+      if (!token) {
+      clearInterval(progressInterval);
+      setIsLoading(false);
+      toast.error("You must be signed in to create an itinerary.");
+      navigate("/signin");
+      return;
+    }
+      const response = await axios.post(
+        "https://trip-planner-server.onrender.com/api/itineraries/generate",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       clearInterval(progressInterval);
       setGenerationProgress(100);
-      navigate("/itinerary");
+
+      // Assuming backend returns the new itinerary's ID
+      const { _id } = response.data;
+      navigate(`/itinerary/${_id}`);
     } catch (error) {
-      console.error("Error creating itinerary:", error);
+      clearInterval(progressInterval);
       setGenerationError("Failed to create itinerary. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

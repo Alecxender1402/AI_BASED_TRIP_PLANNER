@@ -10,7 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
+import { toast } from 'sonner';
+type SignInResponse = {
+  token?: string;
+  message?: string;
+  [key: string]: any;
+};
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -25,14 +30,25 @@ const SignIn = () => {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("https://trip-planner-server.onrender.com/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error) throw error;
+      let data: SignInResponse = {};
+      try {
+        data = await response.json();
+      } catch {
+        // If response is not valid JSON, set a generic error
+        throw new Error("Invalid server response");
+      }
 
-      // Redirect to home page after successful sign in
+     if (!response.ok) throw new Error(data.message || "Sign-in failed");
+
+      // Store token and redirect
+      localStorage.setItem("token", data.token);
+      toast.success("Signed in successfully!");
       navigate("/");
     } catch (error: any) {
       setError(error.message || "An error occurred during sign in");

@@ -1,26 +1,46 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const isLoggedIn = Boolean(localStorage.getItem("token"));
+
+  const handleSignOut = () => {
+    localStorage.removeItem("token");
+    navigate(0); // reloads the page
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Header with Auth Buttons */}
       <div className="absolute top-0 right-0 p-4 z-20 flex gap-4">
-        <Link to="/signin">
+        {isLoggedIn ? (
           <Button
             variant="outline"
             className="bg-white/80 hover:bg-white text-blue-600 font-medium"
+            onClick={handleSignOut}
           >
-            Sign In
+            Sign Out
           </Button>
-        </Link>
-        <Link to="/signup">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
-            Sign Up
-          </Button>
-        </Link>
+        ) : (
+          <>
+            <Link to="/signin">
+              <Button
+                variant="outline"
+                className="bg-white/80 hover:bg-white text-blue-600 font-medium"
+              >
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/signup">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
+                Sign Up
+              </Button>
+            </Link>
+          </>
+        )}
       </div>
 
       {/* Hero Section */}
