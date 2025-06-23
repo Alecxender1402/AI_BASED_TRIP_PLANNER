@@ -1,44 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-
-const countries = [
-  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
-  "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
-  "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo (Congo-Brazzaville)", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czechia (Czech Republic)",
-  "Democratic Republic of the Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
-  "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini (fmr. 'Swaziland')", "Ethiopia",
-  "Fiji", "Finland", "France",
-  "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana",
-  "Haiti", "Holy See", "Honduras", "Hungary",
-  "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy",
-  "Jamaica", "Japan", "Jordan",
-  "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan",
-  "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
-  "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar (formerly Burma)",
-  "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway",
-  "Oman",
-  "Pakistan", "Palau", "Palestine State", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
-  "Qatar",
-  "Romania", "Russia", "Rwanda",
-  "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria",
-  "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
-  "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States of America", "Uruguay", "Uzbekistan",
-  "Vanuatu", "Venezuela", "Vietnam",
-  "Yemen",
-  "Zambia", "Zimbabwe"
-];
-
+import  fetchCitySuggestions from "./fetchCitySuggestions.jsx";
+import  fetchCountrySuggestions from "./fetchCountrySuggestions.jsx";
 interface AutoSuggestInputProps {
+  type: "city" | "country";
   value: string;
   onChange: (val: string) => void;
 }
 
 const AutoSuggestInput: React.FC<AutoSuggestInputProps> = ({
+  type,
   value,
   onChange,
 }) => {
   const [inputValue, setInputValue] = useState(value || "");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [debouncedValue, setDebouncedValue] = useState(inputValue);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Debounce input changes by 250ms
@@ -51,15 +28,27 @@ const AutoSuggestInput: React.FC<AutoSuggestInputProps> = ({
 
   // Fetch suggestions when debounced value changes
   useEffect(() => {
-    if (debouncedValue.trim().length < 1) {
-      setSuggestions([]);
-      return;
+    let active = true;
+    async function fetchSuggestions() {
+      setLoading(true);
+      let results: string[] = [];
+      if (debouncedValue.trim().length >= 1) {
+        if (type === "city") {
+          results = await fetchCitySuggestions(debouncedValue.trim());
+        } else if (type === "country") {
+          results = await fetchCountrySuggestions(debouncedValue.trim());
+        }
+      }
+      if (active) {
+        setSuggestions(results);
+        setLoading(false);
+      }
     }
-    const results = countries.filter((c) =>
-      c.toLowerCase().includes(debouncedValue.toLowerCase())
-    );
-    setSuggestions(results);
-  }, [debouncedValue]);
+    fetchSuggestions();
+    return () => {
+      active = false;
+    };
+  }, [debouncedValue, type]);
 
   const handleSelect = (suggestion: string) => {
     setInputValue(suggestion);
@@ -83,7 +72,7 @@ const AutoSuggestInput: React.FC<AutoSuggestInputProps> = ({
       <input
         ref={inputRef}
         type="text"
-        placeholder="Type country name"
+        placeholder={type === "city" ? "Type city name" : "Type country name"}
         value={inputValue}
         onChange={(e) => {
           setInputValue(e.target.value);
@@ -92,6 +81,9 @@ const AutoSuggestInput: React.FC<AutoSuggestInputProps> = ({
         className="w-full border rounded px-3 py-2"
         autoComplete="off"
       />
+      {loading && (
+        <div className="absolute right-2 top-2 text-xs text-gray-400">Loading...</div>
+      )}
       {suggestions.length > 0 && (
         <ul className="absolute z-10 bg-white border w-full mt-1 rounded shadow max-h-48 overflow-auto">
           {suggestions.map((s, i) => (
@@ -110,3 +102,4 @@ const AutoSuggestInput: React.FC<AutoSuggestInputProps> = ({
 };
 
 export default AutoSuggestInput;
+
