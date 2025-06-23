@@ -39,7 +39,7 @@ const SignUp = () => {
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
-      navigate("/signin", {
+      navigate("/", {
         state: { message: "Account created successfully. Please sign in." },
       });
     } catch (error: any) {
@@ -67,7 +67,7 @@ const SignUp = () => {
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Abhi Bhingradiya"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -80,7 +80,7 @@ const SignUp = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="your.email@example.com"
+                placeholder="abhi@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

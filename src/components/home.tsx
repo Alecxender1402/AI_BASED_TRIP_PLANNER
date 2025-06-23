@@ -1,15 +1,26 @@
-import React from "react";
+import {useState,useEffect} from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const Home = () => {
   const navigate = useNavigate();
-  const isLoggedIn = Boolean(localStorage.getItem("token"));
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(localStorage.getItem("token")));
+
+    useEffect(() => {
+    const onStorage = () => setIsLoggedIn(Boolean(localStorage.getItem("token")));
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+   useEffect(() => {
+    setIsLoggedIn(Boolean(localStorage.getItem("token")));
+  }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
-    navigate(0); // reloads the page
+    setIsLoggedIn(false);
+    navigate(0); 
   };
 
   return (

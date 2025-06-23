@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Toaster, toast } from 'sonner'
+import { Toaster, toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowRight, Send } from "lucide-react";
 import axios from "axios";
+import AutoSuggestInput from "@/components/AutoSuggestInput";
 
 export interface TripFormData {
   destination: string;
@@ -78,12 +79,12 @@ const TripQuestionnaire: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-      clearInterval(progressInterval);
-      setIsLoading(false);
-      toast.error("You must be signed in to create an itinerary.");
-      navigate("/signin");
-      return;
-    }
+        clearInterval(progressInterval);
+        setIsLoading(false);
+        toast.error("You must be signed in to create an itinerary.");
+        navigate("/signin");
+        return;
+      }
       const response = await axios.post(
         "https://trip-planner-server.onrender.com/api/itineraries/generate",
         formData,
@@ -136,7 +137,9 @@ const TripQuestionnaire: React.FC = () => {
             {[1, 2, 3, 4, 5].map((i) => (
               <div
                 key={i}
-                className={`w-12 sm:w-16 h-1 rounded-full ${step >= i ? "bg-primary" : "bg-gray-200"}`}
+                className={`w-12 sm:w-16 h-1 rounded-full ${
+                  step >= i ? "bg-primary" : "bg-gray-200"
+                }`}
               />
             ))}
           </div>
@@ -157,12 +160,10 @@ const TripQuestionnaire: React.FC = () => {
                 </h3>
                 <div className="space-y-2">
                   <Label htmlFor="destination">Destination Country</Label>
-                  <Input
-                    id="destination"
-                    placeholder="e.g. Japan, Italy, Thailand"
+                  <AutoSuggestInput
                     value={formData.destination}
-                    onChange={(e) =>
-                      setFormData({ ...formData, destination: e.target.value })
+                    onChange={(val) =>
+                      setFormData({ ...formData, destination: val })
                     }
                   />
                 </div>
