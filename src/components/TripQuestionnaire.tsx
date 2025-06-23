@@ -159,9 +159,9 @@ const TripQuestionnaire: React.FC = () => {
                   Where would you like to go?
                 </h3>
                 <div className="space-y-2">
-                  <Label htmlFor="destination">Destination Country</Label>
+                  <Label htmlFor="destination">Destination place</Label>
                   <AutoSuggestInput
-                    type="city" // or "country"
+                    type="city"
                     value={formData.destination}
                     onChange={(val) =>
                       setFormData({ ...formData, destination: val })
