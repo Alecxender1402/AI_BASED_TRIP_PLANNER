@@ -1,6 +1,6 @@
 async function fetchCitySuggestions(query) {
   if (!query) return [];
-  const username = "4amh20";
+  const username = "2amh20";
   const url = `https://secure.geonames.org/searchJSON?name=${encodeURIComponent(query)}&featureClass=P&maxRows=10&username=${username}`;
   try {
     const response = await fetch(url);
