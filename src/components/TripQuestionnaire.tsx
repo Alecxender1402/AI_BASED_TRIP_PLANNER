@@ -64,14 +64,35 @@ const TripQuestionnaire: React.FC = () => {
   };
 
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<string[]>([]);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateForm = () => {
+    const missing: string[] = [];
+    if (!formData.destination.trim()) missing.push("destination");
+    if (!formData.budget) missing.push("budget");
+    if (!formData.duration) missing.push("duration");
+    if (!formData.companions.trim()) missing.push("companions");
+    if (!formData.interests.length) missing.push("interests");
+    return missing;
+  };
+
   const handleSubmit = async () => {
     setGenerationError(null);
-    setIsLoading(true);
 
     // Progress indicator
+    const missingFields = validateForm();
+    if (missingFields.length > 0) {
+      setFormErrors(missingFields);
+      toast.error(`Missing field(s): ${missingFields.join(", ")}`);
+      return; // Do not proceed
+    } else {
+      setFormErrors([]);
+    }
+
+    setIsLoading(true);
+
     const progressInterval = setInterval(() => {
       setGenerationProgress((prev) => (prev < 99 ? prev + 5 : prev));
     }, 5000);
@@ -306,6 +327,11 @@ const TripQuestionnaire: React.FC = () => {
                 <p className="text-sm text-destructive w-full text-right">
                   {generationError}
                 </p>
+              )}
+              {formErrors.length > 0 && (
+                <div className="text-red-600 text-sm mb-2 text-right">
+                  Missing field(s): {formErrors.join(", ")}
+                </div>
               )}
               <Button
                 onClick={handleSubmit}
