@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, DollarSign, MapPin, Users } from "lucide-react";
 import ChatInterface from "./ChatInterface";
 import axios from "axios";
+import { toast } from "sonner";
 
 interface Activity {
   time: string;
@@ -62,6 +63,7 @@ const ItineraryDisplay: React.FC = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
+          toast.error("You need to be logged in to view this page.");
           navigate("/signin");
           return;
         }
@@ -112,7 +114,8 @@ const ItineraryDisplay: React.FC = () => {
           variant="outline"
           onClick={() => {
             localStorage.removeItem("token");
-            navigate("/signin");
+            toast.success("Logged out successfully");
+            navigate("/");
           }}
         >
           Log Out
@@ -136,9 +139,6 @@ const ItineraryDisplay: React.FC = () => {
             <DollarSign className="h-5 w-5 text-primary" />
             <span>Budget: ${budget}</span>
           </div>
-          {/* <Badge variant={remainingBudget >= 0 ? "default" : "destructive"}>
-            {budgetStatus}: ${Math.abs(remainingBudget)}
-          </Badge> */}
         </div>
         <p className="text-muted-foreground">
           We've crafted a personalized itinerary based on your preferences.

@@ -86,7 +86,7 @@ const TripQuestionnaire: React.FC = () => {
     if (missingFields.length > 0) {
       setFormErrors(missingFields);
       toast.error(`Missing field(s): ${missingFields.join(", ")}`);
-      return; // Do not proceed
+      return; 
     } else {
       setFormErrors([]);
     }
