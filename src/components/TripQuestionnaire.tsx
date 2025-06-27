@@ -118,8 +118,7 @@ const TripQuestionnaire: React.FC = () => {
       );
       clearInterval(progressInterval);
       setGenerationProgress(100);
-
-      // Assuming backend returns the new itinerary's ID
+      
       const { _id } = response.data;
       navigate(`/itinerary/${_id}`);
     } catch (error) {

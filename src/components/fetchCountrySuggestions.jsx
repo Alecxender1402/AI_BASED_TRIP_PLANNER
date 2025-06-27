@@ -1,6 +1,6 @@
 async function fetchCountrySuggestions(query) {
   if (!query) return [];
-  const username = "2amh20";
+  const username = "1amh20";
   const url = `https://secure.geonames.org/countryInfoJSON?username=${username}`;
   try {
     const response = await fetch(url);
